@@ -1,0 +1,24 @@
+{
+  "name": "Surveillance thread",
+  "mode": "xenforo-thread",
+  "urlEnv": "URL_WATCH_URL",
+  "checkIntervalSeconds": 300,
+  "requestTimeoutSeconds": 30,
+  "httpRetryCount": 3,
+  "httpRetryDelaySeconds": 3,
+  "notifyOnErrors": true,
+  "headers": {
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36",
+    "Accept-Language": "fr-FR,fr;q=0.9,en;q=0.8"
+  },
+  "stateFile": "./state/state.json",
+  "smtp": {
+    "host": "smtp.gmail.com",
+    "port": 587,
+    "useSsl": true,
+    "usernameEnv": "URL_WATCH_SMTP_USERNAME",
+    "passwordEnv": "URL_WATCH_SMTP_PASSWORD",
+    "fromEnv": "URL_WATCH_SMTP_FROM",
+    "toEnv": "URL_WATCH_SMTP_TO"
+  }
+}

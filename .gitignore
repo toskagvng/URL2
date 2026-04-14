@@ -1,0 +1,5 @@
+config.json
+config.local.json
+config.thread.json
+state/thread-state.json
+*.log

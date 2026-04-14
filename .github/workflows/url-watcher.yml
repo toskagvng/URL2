@@ -1,0 +1,71 @@
+name: URL Watcher
+
+on:
+  schedule:
+    - cron: "*/5 * * * *"
+  workflow_dispatch:
+    inputs:
+      send_test_email:
+        description: "Envoie uniquement un e-mail de test"
+        required: false
+        default: false
+        type: boolean
+
+permissions:
+  contents: write
+
+concurrency:
+  group: url-watcher
+  cancel-in-progress: false
+
+jobs:
+  watch:
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        shell: pwsh
+
+    steps:
+      - name: Checkout du depot
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref }}
+
+      - name: Lancer le watcher
+        id: watcher
+        continue-on-error: true
+        env:
+          SEND_TEST_EMAIL: ${{ github.event_name == 'workflow_dispatch' && inputs.send_test_email || 'false' }}
+          URL_WATCH_URL: ${{ secrets.URL_WATCH_URL }}
+          URL_WATCH_SMTP_USERNAME: ${{ secrets.URL_WATCH_SMTP_USERNAME }}
+          URL_WATCH_SMTP_PASSWORD: ${{ secrets.URL_WATCH_SMTP_PASSWORD }}
+          URL_WATCH_SMTP_FROM: ${{ secrets.URL_WATCH_SMTP_FROM }}
+          URL_WATCH_SMTP_TO: ${{ secrets.URL_WATCH_SMTP_TO }}
+        run: |
+          if ("$env:SEND_TEST_EMAIL" -eq "true") {
+            ./watch-url.ps1 -ConfigPath ./config.github-actions.json -SendTestEmail
+          }
+          else {
+            ./watch-url.ps1 -ConfigPath ./config.github-actions.json -RunOnce
+          }
+
+      - name: Commit du state.json si besoin
+        if: always()
+        run: |
+          $changes = git status --porcelain -- state/state.json
+          if (-not $changes) {
+            Write-Host "Aucun changement a enregistrer dans state/state.json."
+            exit 0
+          }
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add state/state.json
+          git commit -m "chore: update watcher state [skip ci]"
+          git push origin "HEAD:$env:GITHUB_REF_NAME"
+
+      - name: Faire echouer le job si le watcher a echoue
+        if: steps.watcher.outcome == 'failure'
+        run: |
+          throw "Le watcher a echoue. Consulte les logs du job."

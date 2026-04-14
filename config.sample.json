@@ -1,0 +1,25 @@
+{
+  "name": "Surveillance Rentry",
+  "mode": "raw",
+  "url": "https://example.com/",
+  "checkIntervalSeconds": 300,
+  "requestTimeoutSeconds": 30,
+  "ignoreWhitespace": true,
+  "notifyOnErrors": true,
+  "matchPattern": null,
+  "headers": {
+    "User-Agent": "LocalUrlWatcher/1.0"
+  },
+  "stateFile": ".\\state\\rentry-state.json",
+  "smtp": {
+    "host": "smtp.gmail.com",
+    "port": 587,
+    "useSsl": true,
+    "username": "ton-adresse@gmail.com",
+    "passwordEnv": "URL_WATCH_SMTP_PASSWORD",
+    "from": "ton-adresse@gmail.com",
+    "to": [
+      "ton-adresse@gmail.com"
+    ]
+  }
+}
