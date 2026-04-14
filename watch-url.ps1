@@ -271,13 +271,51 @@ function Get-RecipientList {
     }
 
     if ($recipientItems.Count -gt 0) {
-        return $recipientItems
+        return @($recipientItems)
     }
 
     $recipientsRaw = Get-ResolvedStringValue -Object $SmtpConfig -PropertyName "to" -EnvPropertyName "toEnv" -DefaultEnvName "URL_WATCH_SMTP_TO" -Required
-    return $recipientsRaw.Split(@(",", ";", "`r", "`n"), [System.StringSplitOptions]::RemoveEmptyEntries) |
+    return @(
+        $recipientsRaw.Split(@(",", ";", "`r", "`n"), [System.StringSplitOptions]::RemoveEmptyEntries) |
         ForEach-Object { $_.Trim() } |
         Where-Object { -not [string]::IsNullOrWhiteSpace($_) }
+    )
+}
+
+function Get-ResponseAbsoluteUri {
+    param(
+        [Parameter(Mandatory = $true)]
+        $Response,
+
+        [string]$FallbackUrl = ""
+    )
+
+    $responseUri = $null
+
+    if ($Response.PSObject.Properties["ResponseUri"]) {
+        $responseUri = $Response.ResponseUri
+    }
+
+    if ($null -eq $responseUri -and $Response.PSObject.Properties["BaseResponse"]) {
+        $baseResponse = $Response.BaseResponse
+
+        if ($null -ne $baseResponse -and $baseResponse.PSObject.Properties["ResponseUri"]) {
+            $responseUri = $baseResponse.ResponseUri
+        }
+
+        if ($null -eq $responseUri -and $null -ne $baseResponse -and $baseResponse.PSObject.Properties["RequestMessage"]) {
+            $requestMessage = $baseResponse.RequestMessage
+            if ($null -ne $requestMessage -and $requestMessage.PSObject.Properties["RequestUri"]) {
+                $responseUri = $requestMessage.RequestUri
+            }
+        }
+    }
+
+    if ($null -ne $responseUri -and -not [string]::IsNullOrWhiteSpace([string]$responseUri)) {
+        return ([System.Uri]$responseUri).AbsoluteUri
+    }
+
+    return $FallbackUrl
 }
 
 function Get-SmtpPassword {
@@ -322,7 +360,7 @@ function Send-NotificationEmail {
     )
 
     $from = Get-ResolvedStringValue -Object $SmtpConfig -PropertyName "from" -EnvPropertyName "fromEnv" -DefaultEnvName "URL_WATCH_SMTP_FROM" -Required
-    $toList = Get-RecipientList -SmtpConfig $SmtpConfig
+    $toList = @(Get-RecipientList -SmtpConfig $SmtpConfig)
     $hostName = Get-ResolvedStringValue -Object $SmtpConfig -PropertyName "host" -EnvPropertyName "hostEnv" -DefaultEnvName "URL_WATCH_SMTP_HOST" -DefaultValue "smtp.gmail.com" -Required
     $port = Get-ResolvedIntValue -Object $SmtpConfig -PropertyName "port" -DefaultValue 587
     $username = Get-ResolvedStringValue -Object $SmtpConfig -PropertyName "username" -EnvPropertyName "usernameEnv" -DefaultEnvName "URL_WATCH_SMTP_USERNAME"
@@ -551,12 +589,13 @@ function Get-XenForoThreadPayload {
 
     $url = Get-ResolvedStringValue -Object $Config -PropertyName "url" -EnvPropertyName "urlEnv" -DefaultEnvName "URL_WATCH_URL" -Required
     $initialResponse = Invoke-TrackedWebRequest -Config $Config -Uri $url
-    $latestPageInfo = Get-XenForoLatestPageUrl -Html ([string]$initialResponse.Content) -CurrentUrl ([string]$initialResponse.BaseResponse.ResponseUri.AbsoluteUri)
+    $initialResponseUrl = Get-ResponseAbsoluteUri -Response $initialResponse -FallbackUrl $url
+    $latestPageInfo = Get-XenForoLatestPageUrl -Html ([string]$initialResponse.Content) -CurrentUrl $initialResponseUrl
     $latestUrl = $latestPageInfo.LatestUrl
     $lastPage = $latestPageInfo.LastPage
     $response = $initialResponse
 
-    if ($latestUrl -ne $initialResponse.BaseResponse.ResponseUri.AbsoluteUri) {
+    if ($latestUrl -ne $initialResponseUrl) {
         $response = Invoke-TrackedWebRequest -Config $Config -Uri $latestUrl
     }
 
