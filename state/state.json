@@ -1,13 +1,13 @@
 {
   "version": 1,
   "lastStatus": "ok",
-  "lastHash": "9590fe08a7d528b15b86f5c999bb51f9865b15e07ee35b1bb8b529b0c004206f",
-  "lastPayloadLength": 10841,
+  "lastHash": "14718b3a83ebce605f917a4ebb79f2993ee8df119c70eaadf1c602466acd469a",
+  "lastPayloadLength": 9762,
   "lastStatusCode": 200,
   "lastPage": 12.0,
-  "lastPostCount": 14,
+  "lastPostCount": 12,
   "baselineCapturedAt": "2026-04-14T10:13:37.6383538Z",
-  "lastChangeAtUtc": "2026-04-27T17:51:02.0546966Z",
+  "lastChangeAtUtc": "2026-04-28T09:11:52.7598343Z",
   "lastErrorFingerprint": null,
   "lastErrorAtUtc": null
 }
