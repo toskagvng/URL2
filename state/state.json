@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "lastStatus": "ok",
+  "lastStatus": "error",
   "lastHash": "2febab1dd0d3865194d84c467fdb27ce83420ee3657b620333b8a3ac90cfa89f",
   "lastPayloadLength": 9964,
   "lastStatusCode": 200,
@@ -8,6 +8,6 @@
   "lastPostCount": 13,
   "baselineCapturedAt": "2026-04-14T10:13:37.6383538Z",
   "lastChangeAtUtc": "2026-04-28T16:25:00.5703541Z",
-  "lastErrorFingerprint": null,
-  "lastErrorAtUtc": null
+  "lastErrorFingerprint": "b266b3bd1c0397919027d3816ed83a4f617a64066ff1fb9acbfd603dc79d6a7c",
+  "lastErrorAtUtc": "2026-04-28T20:49:20.1194865Z"
 }
